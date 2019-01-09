@@ -13,7 +13,7 @@ type Gobot struct {
 	SendPostChan chan *messenger.Post
 	sendDone     chan int
 
-	ErrorChan chan error
+	logger interfaces.Logger
 
 	botList []interfaces.Bot
 }
@@ -27,8 +27,6 @@ func NewGobot(config Config) *Gobot {
 
 	g.SendPostChan = make(chan *messenger.Post, config.SendPostChanSize)
 	g.sendDone = make(chan int, 1)
-
-	g.ErrorChan = make(chan error, config.ErrorChanSize)
 
 	for _, t := range config.TelegramBotSettings {
 		if t.Enable {
@@ -80,7 +78,7 @@ func (g *Gobot) StartGobot(f func(*messenger.Post) []*messenger.Post) error {
 				for _, b := range g.botList {
 					e := b.Send(post)
 					if e != nil {
-						g.ErrorChan <- e
+						g.logger.Error(e.Error())
 					}
 				}
 			case <-g.sendDone:
