@@ -13,14 +13,14 @@ type Gobot struct {
 	SendPostChan chan *messenger.Post
 	sendDone     chan int
 
-	logger interfaces.Logger
-
 	botList []interfaces.Bot
+
+	logger interfaces.Logger
 }
 
 // NewGobot :
-func NewGobot(config Config) *Gobot {
-	g := &Gobot{}
+func NewGobot(config Config, logger interfaces.Logger) *Gobot {
+	g := &Gobot{logger: logger}
 
 	g.recvPostChan = make(chan *messenger.Post, config.RecvPostChanSize)
 	g.recvDone = make(chan int, 1)
