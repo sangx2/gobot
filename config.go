@@ -28,7 +28,6 @@ type TelegramBotSettings struct {
 type Config struct {
 	RecvPostChanSize int
 	SendPostChanSize int
-	ErrorChanSize    int
 
 	MattermostBotSettings []MattermostBotSettings
 	TelegramBotSettings   []TelegramBotSettings
@@ -42,10 +41,6 @@ func (c *Config) IsValid() error {
 
 	if c.SendPostChanSize <= 0 {
 		return errors.New("Config.SendPostChanSize is not vaild")
-	}
-
-	if c.ErrorChanSize <= 0 {
-		return errors.New("Config.ErrorChanSize is not vaild")
 	}
 
 	for i, m := range c.MattermostBotSettings {
