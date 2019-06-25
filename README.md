@@ -18,10 +18,10 @@ If you want to send a post, craete model.NewTelegram with chatID or write a mess
 package main
 
 import (
-    	"time"
-    	"fmt"
+	"fmt"
+	"time"
 
-    	"github.com/sangx2/gobot"
+	"github.com/sangx2/gobot"
 	"github.com/sangx2/gobot/model"
 )
 
@@ -37,13 +37,14 @@ func main() {
 		fmt.Printf("NewTelegram error : %s", e)
 	}
 
-	gobot := gobot.NewGobot(telegram, 100)
+	recvPostChan := make(chan *model.Post, 100)
+	gobot := gobot.NewGobot(telegram, recvPostChan)
 
 	e = gobot.Start()
 	if e != nil {
 		fmt.Printf("gobot.Start error : %s", e)
-    	}
-    	defer gobot.Shutdown()
+	}
+	defer gobot.Shutdown()
 
 	post := model.NewPost(model.MESSENGER_TELEGRAM, channel, "start TestGobot4Telegram")
 	e = gobot.SendPost(post)
@@ -52,9 +53,8 @@ func main() {
 	}
 
 	done := make(chan int, 1)
-	recvPostChan := gobot.GetRecvPostChan()
 
-    	// echo
+	// echo
 	go func() {
 		for {
 			select {
@@ -71,9 +71,9 @@ func main() {
 		}
 	}()
 
-    	time.Sleep(time.Second * 5)
-    
-    	done <- 1
+	time.Sleep(time.Second * 5)
+
+	done <- 1
 
 	post = model.NewPost(model.MESSENGER_TELEGRAM, channel, "end TestGobot4Telegram")
 	e = gobot.SendPost(post)
@@ -89,10 +89,10 @@ func main() {
 package main
 
 import (
-    	"fmt"
-    	"time"
+    "fmt"
+    "time"
 
-    	"github.com/sangx2/gobot"
+    "github.com/sangx2/gobot"
 	"github.com/sangx2/gobot/model"
 )
 
@@ -111,7 +111,8 @@ func main() {
         return
 	}
 
-	gobot := gobot.NewGobot(mattermost, 100)
+	recvPostChan := make(chan *model.Post, 100)
+	gobot := gobot.NewGobot(mattermost, recvPostChan)
 
 	e = gobot.Start()
 	if e != nil {
@@ -128,9 +129,8 @@ func main() {
 	}
 
 	done := make(chan int, 1)
-	recvPostChan := gobot.GetRecvPostChan()
 
-    	// echo
+    // echo
 	go func() {
 		for {
 			select {
@@ -146,9 +146,9 @@ func main() {
 				return
 			}
 		}
-    	}()
+    }()
     
-    	time.Sleep(time.Second * 5)
+    time.Sleep(time.Second * 5)
 
 	done <- 1
 
