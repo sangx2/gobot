@@ -13,8 +13,8 @@ type Telegram struct {
 	chatID  int64
 	Channel string
 
-	postChanChan chan chan *Post
-	done         chan int
+	recvPostChanChan chan chan *Post
+	done             chan int
 
 	botAPI         *tgbotapi.BotAPI
 	config         tgbotapi.UpdateConfig
@@ -22,7 +22,7 @@ type Telegram struct {
 }
 
 func NewTelegram(token string, chatID int64, channel string) *Telegram {
-	return &Telegram{token: token, chatID: chatID, Channel: channel, postChanChan: make(chan chan *Post, 1), done: make(chan int, 1)}
+	return &Telegram{token: token, chatID: chatID, Channel: channel, recvPostChanChan: make(chan chan *Post, 1), done: make(chan int, 1)}
 }
 
 func (t *Telegram) IsValid() error {
@@ -55,13 +55,13 @@ func (t *Telegram) Login() error {
 	return nil
 }
 
-func (t *Telegram) GetPostChanChan() chan chan *Post {
-	return t.postChanChan
+func (t *Telegram) GetRecvPostChanChan() chan chan *Post {
+	return t.recvPostChanChan
 }
 
 func (t *Telegram) Start() {
 	go func() {
-		postChan := <-t.postChanChan
+		postChan := <-t.recvPostChanChan
 		for {
 			select {
 			case update := <-t.updatesChannel:

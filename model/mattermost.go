@@ -15,8 +15,8 @@ type Mattermost struct {
 	Team     string
 	Channel  string
 
-	postChanChan chan chan *Post
-	done         chan int
+	recvPostChanChan chan chan *Post
+	done             chan int
 
 	client          *model.Client4
 	botUser         *model.User
@@ -25,7 +25,7 @@ type Mattermost struct {
 }
 
 func NewMattermost(url string, username string, password string, team string, channel string) *Mattermost {
-	return &Mattermost{URL: url, username: username, password: password, Team: team, Channel: channel, postChanChan: make(chan chan *Post, 1), done: make(chan int, 1)}
+	return &Mattermost{URL: url, username: username, password: password, Team: team, Channel: channel, recvPostChanChan: make(chan chan *Post, 1), done: make(chan int, 1)}
 }
 
 func (m *Mattermost) IsValid() error {
@@ -91,13 +91,13 @@ func (m *Mattermost) Login() error {
 	return nil
 }
 
-func (m *Mattermost) GetPostChanChan() chan chan *Post {
-	return m.postChanChan
+func (m *Mattermost) GetRecvPostChanChan() chan chan *Post {
+	return m.recvPostChanChan
 }
 
 func (m *Mattermost) Start() {
 	go func() {
-		postChan := <-m.postChanChan
+		postChan := <-m.recvPostChanChan
 		for {
 			select {
 			case eventChannel := <-m.webSocketClient.EventChannel:

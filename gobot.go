@@ -22,7 +22,7 @@ func (g *Gobot) Start() error {
 
 	g.bot.Start()
 
-	g.bot.GetPostChanChan() <- g.recvPostChan
+	g.bot.GetRecvPostChanChan() <- g.recvPostChan
 
 	return nil
 }
