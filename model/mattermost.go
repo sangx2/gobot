@@ -1,4 +1,4 @@
-package messenger
+package model
 
 import (
 	"errors"
@@ -8,16 +8,12 @@ import (
 	"github.com/mattermost/mattermost-server/model"
 )
 
-// MATTERMOST :
-const MATTERMOST = "mattermost"
-
-// Mattermost :
 type Mattermost struct {
-	url      string
+	URL      string
 	username string
 	password string
-	team     string
-	channel  string
+	Team     string
+	Channel  string
 
 	postChanChan chan chan *Post
 	done         chan int
@@ -28,14 +24,38 @@ type Mattermost struct {
 	webSocketClient *model.WebSocketClient
 }
 
-// NewMattermost :
 func NewMattermost(url string, username string, password string, team string, channel string) *Mattermost {
-	return &Mattermost{url: url, username: username, password: password, team: team, channel: channel, postChanChan: make(chan chan *Post, 1), done: make(chan int, 1)}
+	return &Mattermost{URL: url, username: username, password: password, Team: team, Channel: channel, postChanChan: make(chan chan *Post, 1), done: make(chan int, 1)}
 }
 
-// Login :
+func (m *Mattermost) IsValid() error {
+	if len(m.URL) == 0 {
+		return errors.New("url is nil")
+	}
+
+	_, e := url.Parse(m.URL)
+	if e != nil {
+		return e
+	}
+
+	if len(m.username) == 0 {
+		return errors.New("username is nil")
+	}
+	if len(m.password) == 0 {
+		return errors.New("password is nil")
+	}
+	if len(m.Team) == 0 {
+		return errors.New("team is nil")
+	}
+	if len(m.Channel) == 0 {
+		return errors.New("channel is nil")
+	}
+
+	return nil
+}
+
 func (m *Mattermost) Login() error {
-	m.client = model.NewAPIv4Client(m.url)
+	m.client = model.NewAPIv4Client(m.URL)
 
 	if _, resp := m.client.GetOldClientConfig(""); resp.Error != nil {
 		return errors.New(resp.Error.Message)
@@ -47,18 +67,18 @@ func (m *Mattermost) Login() error {
 	}
 	m.botUser = user
 
-	team, resp := m.client.GetTeamByName(m.team, "")
+	team, resp := m.client.GetTeamByName(m.Team, "")
 	if resp.Error != nil {
 		return errors.New(resp.Error.Message)
 	}
 
-	channel, resp := m.client.GetChannelByName(m.channel, team.Id, "")
+	channel, resp := m.client.GetChannelByName(m.Channel, team.Id, "")
 	if resp.Error != nil {
 		return errors.New(resp.Error.Message)
 	}
 	m.botChannel = channel
 
-	u, _ := url.Parse(m.url)
+	u, _ := url.Parse(m.URL)
 
 	webSocketClient, e := model.NewWebSocketClient4("wss://"+u.Hostname(), m.client.AuthToken)
 	if e != nil {
@@ -71,12 +91,10 @@ func (m *Mattermost) Login() error {
 	return nil
 }
 
-// GetPostChanChan :
 func (m *Mattermost) GetPostChanChan() chan chan *Post {
 	return m.postChanChan
 }
 
-// Start :
 func (m *Mattermost) Start() {
 	go func() {
 		postChan := <-m.postChanChan
@@ -91,12 +109,12 @@ func (m *Mattermost) Start() {
 				}
 				req := model.PostFromJson(strings.NewReader(eventChannel.Data["post"].(string)))
 				if req != nil {
-					if req.UserId == m.botUser.Id {
+					if len(req.PendingPostId) == 0 {
 						continue
 					}
 				}
 
-				postChan <- NewPost(MATTERMOST, m.channel, req.Message)
+				postChan <- NewPost(MESSENGER_MATTERMOST, m.Channel, req.Message)
 			case <-m.done:
 				break
 			}
@@ -104,12 +122,10 @@ func (m *Mattermost) Start() {
 	}()
 }
 
-// Send :
 func (m Mattermost) Send(post *Post) error {
-	// check messenger & channel
 	switch post.Messenger {
-	case MATTERMOST:
-		if strings.Compare(m.channel, post.Channel) != 0 {
+	case MESSENGER_MATTERMOST:
+		if strings.Compare(m.Channel, post.Channel) != 0 {
 			return nil
 		}
 	default:
@@ -127,12 +143,10 @@ func (m Mattermost) Send(post *Post) error {
 	return nil
 }
 
-// Logout :
 func (m Mattermost) Logout() {
 	m.client.Logout()
 }
 
-// Shutdown :
 func (m Mattermost) Shutdown() {
 	m.done <- 1
 }
