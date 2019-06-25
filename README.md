@@ -1,4 +1,4 @@
-# introduce
+# Gobot
 This is bot client package using mattermost, telegram
 
 ### install
@@ -11,7 +11,7 @@ go get -u github.com/sangx2/gobot
 
 ### Gobot for telegram
 chatID is not necessary value, but you can't send a post.
-If you want to send a post, craete model.NewTelegram with chatID or write a message in telegram
+If you want to send a post, craete model.NewTelegram with chatID or write a message once in telegram
 
 ```go
 package main
