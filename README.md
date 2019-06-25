@@ -1,5 +1,5 @@
 # Gobot
-This is bot client package using mattermost, telegram
+This is bot package using mattermost, telegram
 
 ### install
 
@@ -41,8 +41,8 @@ func main() {
 	e = gobot.Start()
 	if e != nil {
 		fmt.Printf("gobot.Start error : %s", e)
-    }
-    defer gobot.Shutdown()
+    	}
+    	defer gobot.Shutdown()
 
 	post := model.NewPost(model.MESSENGER_TELEGRAM, channel, "start TestGobot4Telegram")
 	e = gobot.SendPost(post)
@@ -53,7 +53,7 @@ func main() {
 	done := make(chan int, 1)
 	recvPostChan := gobot.GetRecvPostChan()
 
-    // echo
+    	// echo
 	go func() {
 		for {
 			select {
@@ -70,9 +70,9 @@ func main() {
 		}
 	}()
 
-    time.Sleep(time.Second * 5)
+    	time.Sleep(time.Second * 5)
     
-    done <- 1
+    	done <- 1
 
 	post = model.NewPost(model.MESSENGER_TELEGRAM, channel, "end TestGobot4Telegram")
 	e = gobot.SendPost(post)
@@ -116,8 +116,8 @@ func main() {
 	if e != nil {
         fmt.Printf("gobot.Start error : %s", e)
         return
-    }
-    defer gobot.Shutdown()
+    	}
+    	defer gobot.Shutdown()
 
 	post := model.NewPost(model.MESSENGER_MATTERMOST, channel, "start TestGobot4Mattermost")
 	e = gobot.SendPost(post)
@@ -129,7 +129,7 @@ func main() {
 	done := make(chan int, 1)
 	recvPostChan := gobot.GetRecvPostChan()
 
-    // echo
+    	// echo
 	go func() {
 		for {
 			select {
@@ -145,9 +145,9 @@ func main() {
 				return
 			}
 		}
-    }()
+    	}()
     
-    time.Sleep(time.Second * 5)
+    	time.Sleep(time.Second * 5)
 
 	done <- 1
 
