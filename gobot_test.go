@@ -21,7 +21,8 @@ func TestGobot4Mattermost(t *testing.T) {
 		t.Errorf("NewMattermost error : %s", e)
 	}
 
-	gobot := NewGobot(mattermost, 100)
+	recvPostChan := make(chan *model.Post, 100)
+	gobot := NewGobot(mattermost, recvPostChan)
 
 	e = gobot.Start()
 	if e != nil {
@@ -36,7 +37,6 @@ func TestGobot4Mattermost(t *testing.T) {
 	}
 
 	done := make(chan int, 1)
-	recvPostChan := gobot.GetRecvPostChan()
 
 	// echo
 	go func() {
@@ -78,7 +78,8 @@ func TestGobot4Telegram(t *testing.T) {
 		t.Errorf("NewTelegram error : %s", e)
 	}
 
-	gobot := NewGobot(telegram, 100)
+	recvPostChan := make(chan *model.Post, 100)
+	gobot := NewGobot(telegram, recvPostChan)
 
 	e = gobot.Start()
 	if e != nil {
@@ -93,7 +94,6 @@ func TestGobot4Telegram(t *testing.T) {
 	}
 
 	done := make(chan int, 1)
-	recvPostChan := gobot.GetRecvPostChan()
 
 	// echo
 	go func() {
