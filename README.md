@@ -35,21 +35,27 @@ func main() {
 	e := telegram.IsValid()
 	if e != nil {
 		fmt.Printf("NewTelegram error : %s", e)
+		return
 	}
 
 	recvPostChan := make(chan *model.Post, 100)
 	gobot := gobot.NewGobot(telegram, recvPostChan)
 
-	e = gobot.Start()
+	e = gobot.Login()
 	if e != nil {
-		fmt.Printf("gobot.Start error : %s", e)
+		fmt.Printlnf("gobot.Login error : %s", e)
+		return
 	}
+	defer gobot.Logout()
+
+	gobot.Start()
 	defer gobot.Shutdown()
 
 	post := model.NewPost(model.MESSENGER_TELEGRAM, channel, "start TestGobot4Telegram")
 	e = gobot.SendPost(post)
 	if e != nil {
 		fmt.Printf("gobot.SendPost error : %s", e)
+		return
 	}
 
 	done := make(chan int, 1)
@@ -114,12 +120,15 @@ func main() {
 	recvPostChan := make(chan *model.Post, 100)
 	gobot := gobot.NewGobot(mattermost, recvPostChan)
 
-	e = gobot.Start()
+	e = gobot.Login()
 	if e != nil {
-        fmt.Printf("gobot.Start error : %s", e)
-        return
-    	}
-    	defer gobot.Shutdown()
+		fmt.Printf("gobot.Login error : %s", e)
+		return
+	}
+	defer gobot.Logout()
+
+	gobot.Start()
+    defer gobot.Shutdown()
 
 	post := model.NewPost(model.MESSENGER_MATTERMOST, channel, "start TestGobot4Mattermost")
 	e = gobot.SendPost(post)
@@ -139,7 +148,6 @@ func main() {
 				e = gobot.SendPost(post)
 				if e != nil {
                     fmt.Printf("gobot.SendPost error : %s", e)
-                    return
 				}
 			case <-done:
 				fmt.Println("done")

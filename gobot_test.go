@@ -24,10 +24,13 @@ func TestGobot4Mattermost(t *testing.T) {
 	recvPostChan := make(chan *model.Post, 100)
 	gobot := NewGobot(mattermost, recvPostChan)
 
-	e = gobot.Start()
+	e = gobot.Login()
 	if e != nil {
-		t.Errorf("gobot.Start error : %s", e)
+		t.Errorf("gobot.Login error : %s", e)
 	}
+	defer gobot.Logout()
+
+	gobot.Start()
 	defer gobot.Shutdown()
 
 	post := model.NewPost(model.MESSENGER_MATTERMOST, channel, "start TestGobot4Mattermost")
@@ -81,10 +84,13 @@ func TestGobot4Telegram(t *testing.T) {
 	recvPostChan := make(chan *model.Post, 100)
 	gobot := NewGobot(telegram, recvPostChan)
 
-	e = gobot.Start()
+	e = gobot.Login()
 	if e != nil {
-		t.Errorf("gobot.Start error : %s", e)
+		t.Errorf("gobot.Login error : %s", e)
 	}
+	defer gobot.Logout()
+
+	gobot.Start()
 	defer gobot.Shutdown()
 
 	post := model.NewPost(model.MESSENGER_TELEGRAM, channel, "start TestGobot4Telegram")
