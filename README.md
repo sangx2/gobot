@@ -51,10 +51,9 @@ func main() {
 	gobot.Start()
 	defer gobot.Shutdown()
 
-	post := model.NewPost(model.MESSENGER_TELEGRAM, channel, "start TestGobot4Telegram")
-	e = gobot.SendPost(post)
+	e = gobot.SendMessage("start TestGobot4Telegram")
 	if e != nil {
-		fmt.Printf("gobot.SendPost error : %s", e)
+		fmt.Printf("gobot.SendMessage error : %s", e)
 		return
 	}
 
@@ -65,10 +64,9 @@ func main() {
 		for {
 			select {
 			case recvPost := <-recvPostChan:
-				post := model.NewPost(model.MESSENGER_TELEGRAM, recvPost.Channel, "[echo:"+recvPost.Channel+"] "+recvPost.Message)
-				e = gobot.SendPost(post)
+				e = gobot.SendMessage("[echo:" + recvPost.Channel + "] " + recvPost.Message)
 				if e != nil {
-					fmt.Printf("gobot.SendPost error : %s", e)
+					fmt.Printf("gobot.SendMessage error : %s", e)
 				}
 			case <-done:
 				fmt.Println("done")
@@ -81,10 +79,9 @@ func main() {
 
 	done <- 1
 
-	post = model.NewPost(model.MESSENGER_TELEGRAM, channel, "end TestGobot4Telegram")
-	e = gobot.SendPost(post)
+	e = gobot.SendMessage("end TestGobot4Telegram")
 	if e != nil {
-		fmt.Printf("gobot.SendPost error : %s", e)
+		fmt.Printf("gobot.SendMessage error : %s", e)
 	}
 }
 ```
@@ -130,10 +127,9 @@ func main() {
 	gobot.Start()
     defer gobot.Shutdown()
 
-	post := model.NewPost(model.MESSENGER_MATTERMOST, channel, "start TestGobot4Mattermost")
-	e = gobot.SendPost(post)
+	e = gobot.SendMessage("start TestGobot4Mattermost")
 	if e != nil {
-        fmt.Printf("gobot.SendPost error : %s", e)
+        fmt.Printf("gobot.SendMessage error : %s", e)
         return
 	}
 
@@ -144,10 +140,9 @@ func main() {
 		for {
 			select {
 			case recvPost := <-recvPostChan:
-				post := model.NewPost(model.MESSENGER_MATTERMOST, recvPost.Channel, "[echo] "+recvPost.Message)
-				e = gobot.SendPost(post)
+				e = gobot.SendMessage("[echo] " + recvPost.Message)
 				if e != nil {
-                    fmt.Printf("gobot.SendPost error : %s", e)
+                    fmt.Printf("gobot.SendMessage error : %s", e)
 				}
 			case <-done:
 				fmt.Println("done")
@@ -160,10 +155,9 @@ func main() {
 
 	done <- 1
 
-	post = model.NewPost(model.MESSENGER_MATTERMOST, channel, "end TestGobot4Mattermost")
-	e = gobot.SendPost(post)
+	e = gobot.SendMessage("end TestGobot4Mattermost")
 	if e != nil {
-		fmt.Printf("gobot.SendPost error : %s", e)
+		fmt.Printf("gobot.SendMessage error : %s", e)
 	}
 }
 ```

@@ -3,7 +3,6 @@ package model
 import (
 	"errors"
 	"fmt"
-	"strings"
 
 	tgbotapi "gopkg.in/telegram-bot-api.v4"
 )
@@ -76,23 +75,14 @@ func (t *Telegram) Start() {
 	}()
 }
 
-func (t Telegram) Send(post *Post) error {
-	switch post.Messenger {
-	case MESSENGER_TELEGRAM:
-		if strings.Compare(t.Channel, post.Channel) != 0 {
-			return nil
-		}
-	default:
-		return nil
-	}
-
+func (t Telegram) SendMessage(message string) error {
 	if t.chatID == 0 {
 		return errors.New("chatID is 0. if you want to send a post, craete model.NewTelegram with chatID or write a message once in telegram")
 	} else {
 		fmt.Println("chatID:", t.chatID)
 	}
 
-	telegramPost := tgbotapi.NewMessage(t.chatID, post.Message)
+	telegramPost := tgbotapi.NewMessage(t.chatID, message)
 
 	_, e := t.botAPI.Send(telegramPost)
 	if e != nil {

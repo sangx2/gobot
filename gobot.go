@@ -32,12 +32,11 @@ func (g *Gobot) Start() {
 	g.bot.GetRecvPostChanChan() <- g.recvPostChan
 }
 
-func (g *Gobot) SendPost(post *model.Post) error {
-	e := g.bot.Send(post)
+func (g *Gobot) SendMessage(message string) error {
+	e := g.bot.SendMessage(message)
 	if e != nil {
 		return e
 	}
-
 	return nil
 }
 

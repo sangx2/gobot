@@ -33,10 +33,9 @@ func TestGobot4Mattermost(t *testing.T) {
 	gobot.Start()
 	defer gobot.Shutdown()
 
-	post := model.NewPost(model.MESSENGER_MATTERMOST, channel, "start TestGobot4Mattermost")
-	e = gobot.SendPost(post)
+	e = gobot.SendMessage("start TestGobot4Mattermost")
 	if e != nil {
-		t.Errorf("gobot.SendPost error : %s", e)
+		t.Errorf("gobot.SendMessage error : %s", e)
 	}
 
 	done := make(chan int, 1)
@@ -46,10 +45,9 @@ func TestGobot4Mattermost(t *testing.T) {
 		for {
 			select {
 			case recvPost := <-recvPostChan:
-				post := model.NewPost(model.MESSENGER_MATTERMOST, recvPost.Channel, "[echo] "+recvPost.Message)
-				e = gobot.SendPost(post)
+				e = gobot.SendMessage("[echo] " + recvPost.Message)
 				if e != nil {
-					t.Errorf("gobot.SendPost error : %s", e)
+					t.Errorf("gobot.SendMessage error : %s", e)
 				}
 			case <-done:
 				t.Log("done")
@@ -62,8 +60,7 @@ func TestGobot4Mattermost(t *testing.T) {
 
 	done <- 1
 
-	post = model.NewPost(model.MESSENGER_MATTERMOST, channel, "end TestGobot4Mattermost")
-	e = gobot.SendPost(post)
+	e = gobot.SendMessage("end TestGobot4Mattermost")
 	if e != nil {
 		t.Errorf("gobot.SendPost error : %s", e)
 	}
@@ -93,10 +90,9 @@ func TestGobot4Telegram(t *testing.T) {
 	gobot.Start()
 	defer gobot.Shutdown()
 
-	post := model.NewPost(model.MESSENGER_TELEGRAM, channel, "start TestGobot4Telegram")
-	e = gobot.SendPost(post)
+	e = gobot.SendMessage("start TestGobot4Telegram")
 	if e != nil {
-		t.Errorf("gobot.SendPost error : %s", e)
+		t.Errorf("gobot.SendMessage error : %s", e)
 	}
 
 	done := make(chan int, 1)
@@ -106,10 +102,9 @@ func TestGobot4Telegram(t *testing.T) {
 		for {
 			select {
 			case recvPost := <-recvPostChan:
-				post := model.NewPost(model.MESSENGER_TELEGRAM, recvPost.Channel, "[echo:"+recvPost.Channel+"] "+recvPost.Message)
-				e = gobot.SendPost(post)
+				e = gobot.SendMessage("[echo:" + recvPost.Channel + "] " + recvPost.Message)
 				if e != nil {
-					t.Errorf("gobot.SendPost error : %s", e)
+					t.Errorf("gobot.SendMessage error : %s", e)
 				}
 			case <-done:
 				t.Log("done")
@@ -122,9 +117,8 @@ func TestGobot4Telegram(t *testing.T) {
 
 	done <- 1
 
-	post = model.NewPost(model.MESSENGER_TELEGRAM, channel, "end TestGobot4Telegram")
-	e = gobot.SendPost(post)
+	e = gobot.SendMessage("end TestGobot4Telegram")
 	if e != nil {
-		t.Errorf("gobot.SendPost error : %s", e)
+		t.Errorf("gobot.SendMessage error : %s", e)
 	}
 }

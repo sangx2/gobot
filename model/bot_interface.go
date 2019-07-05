@@ -4,7 +4,7 @@ type Bot interface {
 	Login() error
 	GetRecvPostChanChan() chan chan *Post
 	Start()
-	Send(*Post) error
+	SendMessage(string) error
 	Logout()
 	Shutdown()
 }
