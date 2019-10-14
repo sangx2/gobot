@@ -1,11 +1,12 @@
-package model
+package gobot
 
 import (
 	"errors"
 	"net/url"
 	"strings"
 
-	"github.com/mattermost/mattermost-server/model"
+	mattermost "github.com/mattermost/mattermost-server/model"
+	"github.com/sangx2/gobot/model"
 )
 
 // Mattermost mattermost 봇 구조체
@@ -16,18 +17,19 @@ type Mattermost struct {
 	Team     string
 	Channel  string
 
-	recvPostChanChan chan chan *Post
+	recvPostChanChan chan chan *model.Post
 	done             chan int
 
-	client          *model.Client4
-	botUser         *model.User
-	botChannel      *model.Channel
-	webSocketClient *model.WebSocketClient
+	client          *mattermost.Client4
+	botUser         *mattermost.User
+	botChannel      *mattermost.Channel
+	webSocketClient *mattermost.WebSocketClient
 }
 
 // NewMattermost mattermost 봇 생성
 func NewMattermost(url string, username string, password string, team string, channel string) *Mattermost {
-	return &Mattermost{URL: url, username: username, password: password, Team: team, Channel: channel, recvPostChanChan: make(chan chan *Post, 1), done: make(chan int, 1)}
+	return &Mattermost{URL: url, username: username, password: password, Team: team, Channel: channel,
+		recvPostChanChan: make(chan chan *model.Post, 1), done: make(chan int, 1)}
 }
 
 // IsValid mattermost 객체의 유효성 검사
@@ -57,9 +59,9 @@ func (m *Mattermost) IsValid() error {
 	return nil
 }
 
-// Login mattermost 로그인
+// Login mattermost 봇 로그인
 func (m *Mattermost) Login() error {
-	m.client = model.NewAPIv4Client(m.URL)
+	m.client = mattermost.NewAPIv4Client(m.URL)
 
 	if _, resp := m.client.GetOldClientConfig(""); resp.Error != nil {
 		return errors.New(resp.Error.Message)
@@ -84,7 +86,7 @@ func (m *Mattermost) Login() error {
 
 	u, _ := url.Parse(m.URL)
 
-	webSocketClient, e := model.NewWebSocketClient4("wss://"+u.Hostname(), m.client.AuthToken)
+	webSocketClient, e := mattermost.NewWebSocketClient4("wss://"+u.Hostname(), m.client.AuthToken)
 	if e != nil {
 		return errors.New(e.Message)
 	}
@@ -96,7 +98,7 @@ func (m *Mattermost) Login() error {
 }
 
 // GetRecvPostChanChan 메시지를 전달할 채널를 위한 chan chan
-func (m *Mattermost) GetRecvPostChanChan() chan chan *Post {
+func (m *Mattermost) GetRecvPostChanChan() chan chan *model.Post {
 	return m.recvPostChanChan
 }
 
@@ -110,17 +112,17 @@ func (m *Mattermost) Start() {
 				if eventChannel.Broadcast.ChannelId != m.botChannel.Id {
 					continue
 				}
-				if eventChannel.Event != model.WEBSOCKET_EVENT_POSTED {
+				if eventChannel.Event != mattermost.WEBSOCKET_EVENT_POSTED {
 					continue
 				}
-				req := model.PostFromJson(strings.NewReader(eventChannel.Data["post"].(string)))
+				req := mattermost.PostFromJson(strings.NewReader(eventChannel.Data["post"].(string)))
 				if req != nil {
 					if len(req.PendingPostId) == 0 {
 						continue
 					}
 				}
 
-				postChan <- NewPost(m.Channel, req.Message, nil)
+				postChan <- model.NewPost(req.Message, req.Id)
 			case <-m.done:
 				break
 			}
@@ -128,20 +130,24 @@ func (m *Mattermost) Start() {
 	}()
 }
 
-// SendMessage mattermost 사용자에게 메시지 전달
-func (m Mattermost) SendMessage(message string) error {
-	mattermostPost := &model.Post{}
-	mattermostPost.ChannelId = m.botChannel.Id
-	mattermostPost.Message = message
+// SendPost mattermost 봇 사용자에게 메시지 전달
+func (m Mattermost) SendPost(post *model.Post) error {
+	matPost := &mattermost.Post{}
+	matPost.ChannelId = m.botChannel.Id
+	matPost.Message = post.Message
 
-	if _, resp := m.client.CreatePost(mattermostPost); resp.Error != nil {
+	if rootID, ok := post.RootID.(string); ok {
+		matPost.RootId = rootID
+	}
+
+	if _, resp := m.client.CreatePost(matPost); resp.Error != nil {
 		return errors.New(resp.Error.Message)
 	}
 
 	return nil
 }
 
-// Logout mattermost 로그아웃
+// Logout mattermost 봇 로그아웃
 func (m Mattermost) Logout() {
 	m.client.Logout()
 }

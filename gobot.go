@@ -17,7 +17,7 @@ func NewGobot(bot interfaces.Bot, recvPostChan chan *model.Post) *Gobot {
 	return &Gobot{bot: bot, recvPostChan: recvPostChan}
 }
 
-// Login 메신저 로그인
+// Login 봇 로그인
 func (g *Gobot) Login() error {
 	e := g.bot.Login()
 	if e != nil {
@@ -26,28 +26,28 @@ func (g *Gobot) Login() error {
 	return nil
 }
 
-// Logout 메신저 로그아웃
+// Logout 봇 로그아웃
 func (g *Gobot) Logout() {
 	g.bot.Logout()
 }
 
-// Start 봇 서버 시작
+// Start 봇 시작
 func (g *Gobot) Start() {
 	g.bot.Start()
 
 	g.bot.GetRecvPostChanChan() <- g.recvPostChan
 }
 
-// SendMessage 사용자에게 메시지 전달
-func (g *Gobot) SendMessage(message string, param interface{}) error {
-	e := g.bot.SendMessage(message, param)
+// SendPost 사용자에게 메시지 전달
+func (g *Gobot) SendPost(post *model.Post) error {
+	e := g.bot.SendPost(post)
 	if e != nil {
 		return e
 	}
 	return nil
 }
 
-// Shutdown 봇서버 종료
+// Shutdown 봇 종료
 func (g *Gobot) Shutdown() {
 	g.bot.Shutdown()
 }

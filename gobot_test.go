@@ -7,6 +7,10 @@ import (
 	"github.com/sangx2/gobot/model"
 )
 
+const (
+	POST_CHAN_SIZE = 100
+)
+
 func TestGobot4Mattermost(t *testing.T) {
 	// fix me
 	url := ""
@@ -15,13 +19,13 @@ func TestGobot4Mattermost(t *testing.T) {
 	team := ""
 	channel := ""
 
-	mattermost := model.NewMattermost(url, username, password, team, channel)
+	mattermost := NewMattermost(url, username, password, team, channel)
 	e := mattermost.IsValid()
 	if e != nil {
 		t.Errorf("NewMattermost error : %s", e)
 	}
 
-	recvPostChan := make(chan *model.Post, 100)
+	recvPostChan := make(chan *model.Post, POST_CHAN_SIZE)
 	gobot := NewGobot(mattermost, recvPostChan)
 
 	e = gobot.Login()
@@ -33,9 +37,9 @@ func TestGobot4Mattermost(t *testing.T) {
 	gobot.Start()
 	defer gobot.Shutdown()
 
-	e = gobot.SendMessage("start TestGobot4Mattermost")
+	e = gobot.SendPost(model.NewPost("start TestGobot4Mattermost", nil))
 	if e != nil {
-		t.Errorf("gobot.SendMessage error : %s", e)
+		t.Errorf("gobot.SendPost error : %s", e)
 	}
 
 	done := make(chan int, 1)
@@ -45,7 +49,7 @@ func TestGobot4Mattermost(t *testing.T) {
 		for {
 			select {
 			case recvPost := <-recvPostChan:
-				e = gobot.SendMessage("[echo] "+recvPost.Message, recvPost.Param)
+				e = gobot.SendPost(model.NewPost("[echo] "+recvPost.Message, recvPost.RootID))
 				if e != nil {
 					t.Errorf("gobot.SendMessage error : %s", e)
 				}
@@ -60,7 +64,7 @@ func TestGobot4Mattermost(t *testing.T) {
 
 	done <- 1
 
-	e = gobot.SendMessage("end TestGobot4Mattermost")
+	e = gobot.SendPost(model.NewPost("end TestGobot4Mattermost", nil))
 	if e != nil {
 		t.Errorf("gobot.SendPost error : %s", e)
 	}
@@ -69,16 +73,15 @@ func TestGobot4Mattermost(t *testing.T) {
 func TestGobot4Telegram(t *testing.T) {
 	// fix me
 	token := ""
-	chatID := 0
 	channel := ""
 
-	telegram := model.NewTelegram(token, int64(chatID), channel)
+	telegram := NewTelegram(token, channel)
 	e := telegram.IsValid()
 	if e != nil {
 		t.Errorf("NewTelegram error : %s", e)
 	}
 
-	recvPostChan := make(chan *model.Post, 100)
+	recvPostChan := make(chan *model.Post, POST_CHAN_SIZE)
 	gobot := NewGobot(telegram, recvPostChan)
 
 	e = gobot.Login()
@@ -90,9 +93,9 @@ func TestGobot4Telegram(t *testing.T) {
 	gobot.Start()
 	defer gobot.Shutdown()
 
-	e = gobot.SendMessage("start TestGobot4Telegram")
+	e = gobot.SendPost(model.NewPost("start TestGobot4Telegram", nil))
 	if e != nil {
-		t.Errorf("gobot.SendMessage error : %s", e)
+		t.Errorf("gobot.SendPost error : %s", e)
 	}
 
 	done := make(chan int, 1)
@@ -102,9 +105,9 @@ func TestGobot4Telegram(t *testing.T) {
 		for {
 			select {
 			case recvPost := <-recvPostChan:
-				e = gobot.SendMessage("[echo:"+recvPost.Channel+"] "+recvPost.Message, recvPost.Param)
+				e = gobot.SendPost(model.NewPost("[echo] "+recvPost.Message, recvPost.RootID))
 				if e != nil {
-					t.Errorf("gobot.SendMessage error : %s", e)
+					t.Errorf("gobot.SendPost error : %s", e)
 				}
 			case <-done:
 				t.Log("done")
@@ -117,8 +120,8 @@ func TestGobot4Telegram(t *testing.T) {
 
 	done <- 1
 
-	e = gobot.SendMessage("end TestGobot4Telegram")
+	e = gobot.SendPost(model.NewPost("end TestGobot4Telegram", nil))
 	if e != nil {
-		t.Errorf("gobot.SendMessage error : %s", e)
+		t.Errorf("gobot.SendPost error : %s", e)
 	}
 }

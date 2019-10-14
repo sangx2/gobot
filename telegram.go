@@ -1,8 +1,9 @@
-package model
+package gobot
 
 import (
 	"errors"
 
+	"github.com/sangx2/gobot/model"
 	tgbotapi "gopkg.in/telegram-bot-api.v4"
 )
 
@@ -12,7 +13,7 @@ type Telegram struct {
 	chatID  int64
 	Channel string
 
-	recvPostChanChan chan chan *Post
+	recvPostChanChan chan chan *model.Post
 	done             chan int
 
 	botAPI         *tgbotapi.BotAPI
@@ -21,8 +22,9 @@ type Telegram struct {
 }
 
 // NewTelegram telegram 봇 생성
-func NewTelegram(token string, chatID int64, channel string) *Telegram {
-	return &Telegram{token: token, chatID: chatID, Channel: channel, recvPostChanChan: make(chan chan *Post, 1), done: make(chan int, 1)}
+func NewTelegram(token string, channel string) *Telegram {
+	return &Telegram{token: token, chatID: 0, Channel: channel,
+		recvPostChanChan: make(chan chan *model.Post, 1), done: make(chan int, 1)}
 }
 
 // IsValid 객체의 유효성 검사
@@ -36,7 +38,7 @@ func (t *Telegram) IsValid() error {
 	return nil
 }
 
-// Login telegram에 로그인
+// Login telegram 봇 로그인
 func (t *Telegram) Login() error {
 	t.config = tgbotapi.NewUpdate(0)
 	t.config.Timeout = 60
@@ -58,7 +60,7 @@ func (t *Telegram) Login() error {
 }
 
 // GetRecvPostChanChan 메시지를 전달할 채널를 위한 chan chan
-func (t *Telegram) GetRecvPostChanChan() chan chan *Post {
+func (t *Telegram) GetRecvPostChanChan() chan chan *model.Post {
 	return t.recvPostChanChan
 }
 
@@ -77,7 +79,7 @@ func (t *Telegram) Start() {
 					t.chatID = update.Message.Chat.ID
 				}
 
-				postChan <- NewPost(t.Channel, update.Message.Text, update.Message.MessageID)
+				postChan <- model.NewPost(update.Message.Text, update.Message.MessageID)
 			case <-t.done:
 				break
 			}
@@ -85,15 +87,16 @@ func (t *Telegram) Start() {
 	}()
 }
 
-// SendMessage telegram 사용자에게 메시지 전달
-func (t Telegram) SendMessage(message string, param interface{}) error {
+// SendPost telegram 사용자에게 메시지 전달
+func (t Telegram) SendPost(post *model.Post) error {
 	if t.chatID == 0 {
-		return errors.New("chatID is 0. if you want to send a post, craete model.NewTelegram with chatID or write a message once in telegram")
+		return errors.New("chatID is 0. if you want to send a post," +
+			" craete model.NewTelegram with chatID or write a message once in telegram")
 	}
 
-	telegramPost := tgbotapi.NewMessage(t.chatID, message)
-	if rtMsgID, ok := param.(int); ok {
-		telegramPost.ReplyToMessageID = rtMsgID
+	telegramPost := tgbotapi.NewMessage(t.chatID, post.Message)
+	if rootID, ok := post.RootID.(int); ok {
+		telegramPost.ReplyToMessageID = rootID
 	}
 
 	_, e := t.botAPI.Send(telegramPost)
@@ -104,7 +107,7 @@ func (t Telegram) SendMessage(message string, param interface{}) error {
 	return nil
 }
 
-// Logout telegram 로그아웃
+// Logout telegram 봇 로그아웃
 func (t Telegram) Logout() {
 	t.botAPI.StopReceivingUpdates()
 }
