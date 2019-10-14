@@ -1,16 +1,13 @@
 package model
 
-const (
-	MESSENGER_TELEGRAM   = "telegram"
-	MESSENGER_MATTERMOST = "mattermost"
-)
-
+// Post 메시지 구조체
 type Post struct {
-	Messenger string
-	Channel   string
-	Message   string
+	Channel string
+	Message string
+	Param   interface{}
 }
 
-func NewPost(messenger string, channel string, message string) *Post {
-	return &Post{Messenger: messenger, Channel: channel, Message: message}
+// NewPost 메시지 생성
+func NewPost(channel string, message string, param interface{}) *Post {
+	return &Post{Channel: channel, Message: message, Param: param}
 }

@@ -45,7 +45,7 @@ func TestGobot4Mattermost(t *testing.T) {
 		for {
 			select {
 			case recvPost := <-recvPostChan:
-				e = gobot.SendMessage("[echo] " + recvPost.Message)
+				e = gobot.SendMessage("[echo] "+recvPost.Message, recvPost.Param)
 				if e != nil {
 					t.Errorf("gobot.SendMessage error : %s", e)
 				}
@@ -102,7 +102,7 @@ func TestGobot4Telegram(t *testing.T) {
 		for {
 			select {
 			case recvPost := <-recvPostChan:
-				e = gobot.SendMessage("[echo:" + recvPost.Channel + "] " + recvPost.Message)
+				e = gobot.SendMessage("[echo:"+recvPost.Channel+"] "+recvPost.Message, recvPost.Param)
 				if e != nil {
 					t.Errorf("gobot.SendMessage error : %s", e)
 				}

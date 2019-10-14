@@ -8,6 +8,7 @@ import (
 	"github.com/mattermost/mattermost-server/model"
 )
 
+// Mattermost mattermost 봇 구조체
 type Mattermost struct {
 	URL      string
 	username string
@@ -24,10 +25,12 @@ type Mattermost struct {
 	webSocketClient *model.WebSocketClient
 }
 
+// NewMattermost mattermost 봇 생성
 func NewMattermost(url string, username string, password string, team string, channel string) *Mattermost {
 	return &Mattermost{URL: url, username: username, password: password, Team: team, Channel: channel, recvPostChanChan: make(chan chan *Post, 1), done: make(chan int, 1)}
 }
 
+// IsValid mattermost 객체의 유효성 검사
 func (m *Mattermost) IsValid() error {
 	if len(m.URL) == 0 {
 		return errors.New("url is nil")
@@ -54,6 +57,7 @@ func (m *Mattermost) IsValid() error {
 	return nil
 }
 
+// Login mattermost 로그인
 func (m *Mattermost) Login() error {
 	m.client = model.NewAPIv4Client(m.URL)
 
@@ -91,10 +95,12 @@ func (m *Mattermost) Login() error {
 	return nil
 }
 
+// GetRecvPostChanChan 메시지를 전달할 채널를 위한 chan chan
 func (m *Mattermost) GetRecvPostChanChan() chan chan *Post {
 	return m.recvPostChanChan
 }
 
+// Start mattermost 봇 시작
 func (m *Mattermost) Start() {
 	go func() {
 		postChan := <-m.recvPostChanChan
@@ -114,7 +120,7 @@ func (m *Mattermost) Start() {
 					}
 				}
 
-				postChan <- NewPost(MESSENGER_MATTERMOST, m.Channel, req.Message)
+				postChan <- NewPost(m.Channel, req.Message, nil)
 			case <-m.done:
 				break
 			}
@@ -122,6 +128,7 @@ func (m *Mattermost) Start() {
 	}()
 }
 
+// SendMessage mattermost 사용자에게 메시지 전달
 func (m Mattermost) SendMessage(message string) error {
 	mattermostPost := &model.Post{}
 	mattermostPost.ChannelId = m.botChannel.Id
@@ -134,10 +141,12 @@ func (m Mattermost) SendMessage(message string) error {
 	return nil
 }
 
+// Logout mattermost 로그아웃
 func (m Mattermost) Logout() {
 	m.client.Logout()
 }
 
+// Shutdown mattermost 봇 종료
 func (m Mattermost) Shutdown() {
 	m.done <- 1
 }
