@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	"github.com/sangx2/gobot/model"
-	tgbotapi "gopkg.in/telegram-bot-api.v4"
+	tgbotapi "gopkg.in/telegram-bot-api"
 )
 
 // Telegram telegram 봇
